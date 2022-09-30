@@ -17,12 +17,13 @@ def ingest_data():
     with open('clusters_report.txt') as file:
         raw_list=list(file.readlines())
         file.close()
-    print('\n',type(raw_list),raw_list)
+
 
     lista=[' '.join(e.split()) for e in raw_list]
     lista=[i.replace('\n','').lower().strip() for i in lista][4:]
     lista=[e.replace(' % ',' ') for e in lista]
     lista=[e.replace('.','') for e in lista]
+    lista=[e.replace('-','~') for e in lista]
 
     lista_f=list()
     for e in lista:
@@ -72,7 +73,6 @@ def ingest_data():
         cols.append(c)
 
     df.set_axis(cols,axis=1,inplace=True)
-
     
     df['final_col']=pd.Series()
 
@@ -85,5 +85,12 @@ def ingest_data():
     df=df[['col0','col1','col2','final_col']]
     df.set_axis(['cluster','cantidad_de_palabras_clave','porcentaje_de_palabras_clave','principales_palabras_clave'],axis=1,inplace=True)
     df.drop_duplicates(subset='cluster',keep='last',inplace=True)
+    
+    df['cluster']=df['cluster'].astype('int64')
+    df['cantidad_de_palabras_clave']=df['cantidad_de_palabras_clave'].astype('int64')
+    df['porcentaje_de_palabras_clave']=df['porcentaje_de_palabras_clave'].astype('float64')
+    df['principales_palabras_clave']=df['principales_palabras_clave'].apply(lambda x: x.replace('-',chr(32)))
+    df['principales_palabras_clave']=df['principales_palabras_clave'].apply(lambda x: x.replace('~','-'))
 
     return df
+
