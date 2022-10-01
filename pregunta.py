@@ -18,7 +18,6 @@ def ingest_data():
         raw_list=list(file.readlines())
         file.close()
 
-
     lista=[' '.join(e.split()) for e in raw_list]
     lista=[i.replace('\n','').lower().strip() for i in lista][4:]
     lista=[e.replace(' % ',' ') for e in lista]
@@ -32,12 +31,26 @@ def ingest_data():
         e=re.sub(r'(, )','|',e)
         e=re.sub(r'(,)','|',e)
         if len(re.findall(r'\s+',e))>0:
-            e=re.sub(r'\s+','|',e,count=3)
+            if e[0].isdigit():
+                e=re.sub(r'\s+','|',e,count=3)
         e=e.replace(chr(32),'-')
         lista_f.append(e)
 
+    correc = []
+    cadena=str()
+
+    for sube in lista_f:
+        if sube[0:1].isdigit():
+            cadena=sube
+        elif len(sube)<=0:
+            cadena=str()
+        else:
+            cadena=cadena+'-'+sube
+        correc.append(cadena)
+
+
     my_list=list()
-    for i in lista_f:
+    for i in correc:
         g=list(i.split('|'))
         my_list.append(g)
 
@@ -50,7 +63,6 @@ def ingest_data():
         if len(subl)==0:
             my_list.remove(subl)
 
-
     resultado = []
     auxiliar = []
     for sublista in my_list:
@@ -60,7 +72,6 @@ def ingest_data():
             auxiliar = []
             auxiliar=sublista
         resultado.append(auxiliar)
-
 
     df=pd.DataFrame()
     for row in resultado:
@@ -73,24 +84,27 @@ def ingest_data():
         cols.append(c)
 
     df.set_axis(cols,axis=1,inplace=True)
-    
-    df['final_col']=pd.Series()
+    df['final_col']=pd.Series([],dtype=pd.StringDtype())
+    df=pd.DataFrame(df).reset_index(drop=True)
 
     max=df.shape[1]-1
-    for r in range(3,max):
-        df['final_col']=df['final_col'].apply(str)+','+df['col'+str(r)].apply(str)
+    for c in range(3,max):
+        df['final_col']=df['final_col'].map(str)+','+df['col'+str(c)].map(str)
 
     df['final_col']=df['final_col'].apply(lambda x: re.sub(r'nan,','',x))
     df['final_col']=df['final_col'].apply(lambda x: re.sub(r',nan','',x))
     df=df[['col0','col1','col2','final_col']]
     df.set_axis(['cluster','cantidad_de_palabras_clave','porcentaje_de_palabras_clave','principales_palabras_clave'],axis=1,inplace=True)
     df.drop_duplicates(subset='cluster',keep='last',inplace=True)
-    
+
     df['cluster']=df['cluster'].astype('int64')
     df['cantidad_de_palabras_clave']=df['cantidad_de_palabras_clave'].astype('int64')
     df['porcentaje_de_palabras_clave']=df['porcentaje_de_palabras_clave'].astype('float64')
+
     df['principales_palabras_clave']=df['principales_palabras_clave'].apply(lambda x: x.replace('-',chr(32)))
     df['principales_palabras_clave']=df['principales_palabras_clave'].apply(lambda x: x.replace('~','-'))
-
+    df['principales_palabras_clave']=df['principales_palabras_clave'].apply(lambda x: x.replace(',',', '))
+    df['principales_palabras_clave']=df['principales_palabras_clave'].apply(lambda x: x.replace(',  ',', '))
+    
     return df
 
