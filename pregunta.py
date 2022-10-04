@@ -14,15 +14,17 @@ import re
 
 def ingest_data():
     raw_list=list()
-    with open('clusters_report.txt') as file:
+    with open('C:/Users/Pablo RioSan/Desktop/Postgrado UNAL/Sem.I_2022-2S/02. Ciencia_de_Datos/Sesion05_20220909/02. taller_data_ingestion/clusters_report.txt') as file:
         raw_list=list(file.readlines())
         file.close()
+
 
     lista=[' '.join(e.split()) for e in raw_list]
     lista=[i.replace('\n','').lower().strip() for i in lista][4:]
     lista=[e.replace(' % ',' ') for e in lista]
     lista=[e.replace('.','') for e in lista]
     lista=[e.replace('-','~') for e in lista]
+
 
     lista_f=list()
     for e in lista:
@@ -36,10 +38,13 @@ def ingest_data():
         e=e.replace(chr(32),'-')
         lista_f.append(e)
 
+
+    #===========TESTEO================
     correc = []
     cadena=str()
 
     for sube in lista_f:
+        print(sube)
         if sube[0:1].isdigit():
             cadena=sube
         elif len(sube)<=0:
@@ -47,6 +52,7 @@ def ingest_data():
         else:
             cadena=cadena+'-'+sube
         correc.append(cadena)
+    #=================================
 
 
     my_list=list()
@@ -63,6 +69,7 @@ def ingest_data():
         if len(subl)==0:
             my_list.remove(subl)
 
+
     resultado = []
     auxiliar = []
     for sublista in my_list:
@@ -72,6 +79,7 @@ def ingest_data():
             auxiliar = []
             auxiliar=sublista
         resultado.append(auxiliar)
+
 
     df=pd.DataFrame()
     for row in resultado:
@@ -86,6 +94,8 @@ def ingest_data():
     df.set_axis(cols,axis=1,inplace=True)
     df['final_col']=pd.Series([],dtype=pd.StringDtype())
     df=pd.DataFrame(df).reset_index(drop=True)
+
+
 
     max=df.shape[1]-1
     for c in range(3,max):
@@ -105,6 +115,6 @@ def ingest_data():
     df['principales_palabras_clave']=df['principales_palabras_clave'].apply(lambda x: x.replace('~','-'))
     df['principales_palabras_clave']=df['principales_palabras_clave'].apply(lambda x: x.replace(',',', '))
     df['principales_palabras_clave']=df['principales_palabras_clave'].apply(lambda x: x.replace(',  ',', '))
-    
-    return df
+    df['principales_palabras_clave']=df['principales_palabras_clave'].apply(lambda x: x.replace('<NA>, ',''))
 
+    return df
