@@ -14,7 +14,7 @@ import re
 
 def ingest_data():
     raw_list=list()
-    with open('C:/Users/Pablo RioSan/Desktop/Postgrado UNAL/Sem.I_2022-2S/02. Ciencia_de_Datos/Sesion05_20220909/02. taller_data_ingestion/clusters_report.txt') as file:
+    with open('clusters_report.txt') as file:
         raw_list=list(file.readlines())
         file.close()
 
@@ -53,7 +53,6 @@ def ingest_data():
             cadena=cadena+'-'+sube
         correc.append(cadena)
     #=================================
-
 
     my_list=list()
     for i in correc:
@@ -94,8 +93,6 @@ def ingest_data():
     df.set_axis(cols,axis=1,inplace=True)
     df['final_col']=pd.Series([],dtype=pd.StringDtype())
     df=pd.DataFrame(df).reset_index(drop=True)
-
-
 
     max=df.shape[1]-1
     for c in range(3,max):
